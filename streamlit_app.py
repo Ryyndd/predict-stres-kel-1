@@ -1,5 +1,6 @@
 import streamlit as st
 
+st.Page("streamlit_app.py", title="DASHBOARD")
 # Set page configuration
 st.set_page_config(page_title="DASHBOARD")
 
