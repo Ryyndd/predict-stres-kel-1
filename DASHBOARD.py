@@ -2,6 +2,7 @@ import streamlit as st
 
 # Set page configuration
 st.set_page_config(page_title="DASHBOARD")
+st.Page("streamlit_app.py", title="DASHBOARD")
 
 # Title
 st.markdown(""" 

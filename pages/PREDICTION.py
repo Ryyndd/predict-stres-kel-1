@@ -6,88 +6,106 @@ from joblib import dump, load
 import streamlit as st
 from openai import OpenAI
 
-# Load the dataset
-data = pd.read_csv('pages/student_lifestyle_dataset.csv')
+# st.set_page_config(page_title="PREDIKSI TINGKAT STRES", layout="wide")
 
-# Add feature for Study-Sleep Ratio
-data['Study_Sleep_Ratio'] = data['Study_Hours_Per_Day'] / (data['Sleep_Hours_Per_Day'] + 1)
+def show_prediction():
+    # Load dataset
+    data = pd.read_csv('pages/student_lifestyle_dataset.csv')
 
-# Features and target
-X = data[['Study_Hours_Per_Day', 'Sleep_Hours_Per_Day', 'Physical_Activity_Hours_Per_Day', 'GPA', 'Study_Sleep_Ratio']]
-y = data['Stress_Level']
+    # Menambah fitur Study-Sleep Ratio (menghindari pembagian dengan nol)
+    data['Study_Sleep_Ratio'] = data['Study_Hours_Per_Day'] / (data['Sleep_Hours_Per_Day'] + 1)
 
-# Encode target labels
-label_encoder = LabelEncoder()
-y_encoded = label_encoder.fit_transform(y)
+    # Fitur dan target
+    X = data[['Study_Hours_Per_Day', 'Sleep_Hours_Per_Day', 
+            'Physical_Activity_Hours_Per_Day', 'GPA', 'Study_Sleep_Ratio']]
+    y = data['Stress_Level']
 
-# Scale features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+    # Encode target
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
 
-# Split data for training and validation
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
+    # Normalisasi data
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
 
-# Train the model
-model = RandomForestClassifier(random_state=42, n_estimators=100)
-model.fit(X_train, y_train)
+    # Split data untuk training dan testing
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
 
-# Save model, scaler, and encoder
-dump(model, 'modelku_rf.sav')
-dump(scaler, 'scaler_rf.sav')
-dump(label_encoder, 'label_encoder_rf.sav')
+    # Training model dengan RandomForestClassifier
+    model = RandomForestClassifier(random_state=42, n_estimators=100)
+    model.fit(X_train, y_train)
 
-# Load model, scaler, and encoder for prediction
-model = load('modelku_rf.sav')
-scaler = load('scaler_rf.sav')
-label_encoder = load('label_encoder_rf.sav')
+    # Menyimpan model dan scaler
+    dump(model, 'modelku_rf.sav')
+    dump(scaler, 'scaler_rf.sav')
+    dump(label_encoder, 'label_encoder_rf.sav')
 
-# Streamlit application
-st.title("PREDIKSI TINGKAT STRES BERDASARKAN GAYA HIDUP")
+    # Load kembali model, scaler, dan label encoder
+    model = load('modelku_rf.sav')
+    scaler = load('scaler_rf.sav')
+    label_encoder = load('label_encoder_rf.sav')
 
-# OpenAI Client
-client = OpenAI(base_url="https://api.electronhub.top/v1/", api_key="ek-SnjqmE0dzQ4A3nesT9hV4kddgC4bwXGHH3Q9iiFHIhIRodeSpk")
+    # Judul aplikasi
+    st.title("🎯 Prediksi Tingkat Stres Berdasarkan Gaya Hidup")
 
-# Input fields
-keluhan = st.text_area("Masukan Keluhan Anda...")
-jam_belajar = st.number_input('Study Hours Per Day', min_value=0.0, max_value=24.0, step=0.1)
-jam_tidur = st.number_input('Sleep Hours Per Day', min_value=0.0, max_value=24.0, step=0.1)
-aktivitas_fisik = st.number_input('Physical Activity Hours Per Day', min_value=0.0, max_value=24.0, step=0.1)
-nilai_gpa = st.slider('GPA', 0.0, 4.0, step=0.01)
+    # Membuat dua kolom
+    col1, col2 = st.columns([2, 1])
 
-if st.button('Predict'):
-    # Add Study-Sleep Ratio
-    study_sleep_ratio = jam_belajar / (jam_tidur + 1)
+    with col1:
+        # Form input pengguna
+        keluhan = st.text_area("Masukkan Keluhan Anda")
+        jam_belajar = st.number_input('Jam Belajar per Hari', min_value=0.0, max_value=24.0, step=0.1)
+        jam_tidur = st.number_input('Jam Tidur per Hari', min_value=0.0, max_value=24.0, step=0.1)
+        aktivitas_fisik = st.number_input('Jam Aktivitas Fisik per Hari', min_value=0.0, max_value=24.0, step=0.1)
+        nilai_gpa = st.slider('Nilai GPA', 0.0, 4.0, step=0.01)
 
-    input_data = [[jam_belajar, jam_tidur, aktivitas_fisik, nilai_gpa, study_sleep_ratio]]
-    input_data_scaled = scaler.transform(input_data)
+        if st.button('Prediksi'):
+            # Menghitung rasio belajar dan tidur
+            study_sleep_ratio = jam_belajar / (jam_tidur + 1)
 
-    prediction_encoded = model.predict(input_data_scaled)
-    prediction_label = label_encoder.inverse_transform(prediction_encoded)
+            # Menyiapkan data untuk prediksi
+            input_data = [[jam_belajar, jam_tidur, aktivitas_fisik, nilai_gpa, study_sleep_ratio]]
+            input_data_scaled = scaler.transform(input_data)
 
-    # Display result
-    st.success(f"TINGKAT STRES ANDA ADALAH : {prediction_label[0].upper()}")
-    st.markdown(" Tingkat Level Stress adalah High : Tinggi, Moderate : Sedang, Low : Rendah")
+            # Melakukan prediksi
+            prediction_encoded = model.predict(input_data_scaled)
+            prediction_label = label_encoder.inverse_transform(prediction_encoded)
 
-    # Generate AI-based advice with context
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "system", "content": "Saya adalah seorang ahli kesehatan mental."}]
+            # Menampilkan hasil prediksi
+            st.success(f"✨ Tingkat Stres Anda: **{prediction_label[0].upper()}**")
+            st.markdown("**Keterangan Tingkat Stres:**\n- **High**: Tinggi\n- **Moderate**: Sedang\n- **Low**: Rendah")
 
-    # Contextual prompt with prediction and complaints
-    user_prompt = (
-        f"Pengguna mengeluhkan '{keluhan}'. Mengingat {jam_belajar} " 
-        f"jam belajar dan {jam_tidur} jam tidur setiap hari, serta nilai GPA {nilai_gpa},"
-        f"kemungkinan besar pengguna mengalami stres {prediction_label[0]}."
-        f"Untuk mengelola stres ini, berikan saran yang bisa membantu mengurangi stress pengguna."
-    )
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
+            # Konsultasi menggunakan OpenAI
+            if "messages" not in st.session_state:
+                st.session_state["messages"] = [{"role": "system", "content": "Saya adalah seorang ahli kesehatan mental."}]
 
-    # Get response from OpenAI
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=st.session_state.messages
-    )
-    ai_response = response.choices[0].message.content
+            user_prompt = (
+                f"Pengguna mengeluhkan '{keluhan}'. Dengan {jam_belajar} jam belajar, "
+                f"{jam_tidur} jam tidur, dan nilai GPA {nilai_gpa}, kemungkinan stres pengguna adalah {prediction_label[0]}."
+                " Berikan saran untuk membuat gaya hidup sesuai dan ideal"
+            )
+            st.session_state.messages.append({"role": "user", "content": user_prompt})
 
-    # Display AI-generated advice
-    st.session_state.messages.append({"role": "system", "content": ai_response})
-    st.chat_message("system").write(ai_response)
+            client = OpenAI(base_url="https://api.electronhub.top/v1/", api_key="ek-SnjqmE0dzQ4A3nesT9hV4kddgC4bwXGHH3Q9iiFHIhIRodeSpk")
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=st.session_state.messages
+            )
+            ai_response = response.choices[0].message.content
+            st.session_state.messages.append({"role": "system", "content": ai_response})
+            st.chat_message("system").write(ai_response)
+
+    with col2:
+        st.markdown("""<div style="margin-top: 50px;"> </div>""", unsafe_allow_html=True)
+        st.image("oo.png", caption="Ilustrasi Tingkat Stres")
+        st.info("""
+        ✨ **Petunjuk Penggunaan:**  
+        1. Masukkan *keluhan Anda* di kotak teks.  
+        2. Isi jumlah *jam belajar, **jam tidur, dan **aktivitas fisik per hari* di kolom angka.  
+        3. Pilih *GPA* Anda dengan menggeser slider.  
+        4. Klik tombol **"Predict"** untuk melihat hasil prediksi tingkat stres.  
+        5. Lihat hasil prediksi dan saran untuk mengelola stres Anda.  
+
+        💡 Selamat mencoba dan semoga bermanfaat!
+        """)
+
