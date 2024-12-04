@@ -104,7 +104,7 @@ def show_prediction():
         2. Isi jumlah *jam belajar, **jam tidur, dan **aktivitas fisik per hari* di kolom angka.  
         3. Pilih *GPA* Anda dengan menggeser slider.  
         4. Klik tombol **"Predict"** untuk melihat hasil prediksi tingkat stres.  
-        5. Lihat hasil prediksi dan saran untuk mengelola stres Anda.  
+        5. Lihat hasil prediksi dan saran yang diberikan oleh AI untuk mengelola stres Anda.  
 
         💡 Selamat mencoba dan semoga bermanfaat!
         """)
