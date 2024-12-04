@@ -29,7 +29,7 @@ def show_overview():
         
     with col2:
         
-        st.title("💫 METHODE")
+        st.title("📊 METHODE")
         # Ilustrasi pohon keputusan
         st.image("forest.png", caption="Ilustrasi Proses Random Forest")
         
@@ -69,13 +69,6 @@ def show_overview():
         - **Fleksibilitas Fitur:** Dapat digunakan dengan data berskala besar maupun kecil.
         - **Akurasi Tinggi:** Menggunakan pendekatan kolektif untuk meningkatkan keandalan.
         """)
-
-        # Bagian 4: Diagram Confusion Matrix
-        st.header("📊 Confusion Matrix dalam Klasifikasi")
-        st.markdown("""
-        Berikut adalah *confusion matrix* untuk dua kelas, yang digunakan untuk mengevaluasi kinerja model:
-        """)
-        # st.image("confusion_matrix_example.png", caption="Contoh Confusion Matrix", use_column_width=True)
 
         # Bagian 5: Kesimpulan
         st.header("🏁 Kesimpulan")
