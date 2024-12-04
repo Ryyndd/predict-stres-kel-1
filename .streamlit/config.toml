@@ -3,7 +3,6 @@ base="dark"
 primaryColor="#ff004c"
 backgroundColor="#ffffff"
 textColor="#31333F"
-textColor="#31333F"
 font="sans serif"
 showSidebarNavigation = false
 disableWidgetStateDuplicationWarning = false
