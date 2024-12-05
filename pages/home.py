@@ -18,7 +18,7 @@ def show_home():
     
         # Menampilkan dataset pada dua kolom
     with col1:
-        st.image("ss.png")
+        st.image("ss.png", width=450)
         
     with col2:
     
@@ -38,11 +38,7 @@ def show_home():
             unsafe_allow_html=True
         )
         
-        
-        
-        if st.button("CEK LEVEL STRESSMU", icon="🤣",use_container_width=True , type="primary") :
-            prediction.show_prediction()
-            
+        st.button("CEK LEVEL STRESSMU", icon="🤣", use_container_width=True, type="primary")
     # Footer
     st.markdown("""
         <div style="text-align: center; margin-top: 50px; color: ">

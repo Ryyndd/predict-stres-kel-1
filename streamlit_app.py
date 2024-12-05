@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+
 import pages.home as home
 import pages.dataset as dataset
 import pages.overview as overview
@@ -7,6 +7,7 @@ import pages.prediction as prediction
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="STRES LEVEL", layout="wide", initial_sidebar_state="collapsed")
+
 
 # Tambahkan CSS untuk menyesuaikan tampilan
 st.markdown(
@@ -42,15 +43,11 @@ selected =  option_menu(
 )
 
 if selected == "Home":
-    # Home = importlib.import_module("home")
     home.show_home()
 if selected == "Dataset":
-    # Data = importlib.import_module("data")
     dataset.show_dataset()
 if selected == "Overview":
-    # Visualization = importlib.import_module("visualisasi")
     overview.show_overview()
 if selected == "Prediction":
-    # About = importlib.import_module("about")
     prediction.show_prediction()
     
